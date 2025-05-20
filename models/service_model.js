@@ -1,0 +1,70 @@
+const pool = require('../config/database');
+
+class Service {
+  // Get all active services
+  static async getAll() {
+    try {
+      const [rows] = await pool.query('SELECT * FROM services WHERE is_active = TRUE');
+      return rows.map(row => ({
+        ...row,
+        description: JSON.parse(row.description)
+      }));
+    } catch (error) {
+      throw new Error('Error fetching services: ' + error.message);
+    }
+  }
+
+  // Get service by ID
+  static async getById(id) {
+    try {
+      const [rows] = await pool.query('SELECT * FROM services WHERE service_id = ? AND is_active = TRUE', [id]);
+      if (rows.length === 0) return null;
+      return {
+        ...row,
+        description: JSON.parse(rows[0].description)
+      };
+    } catch (error) {
+      throw new Error('Error fetching service: ' + error.message);
+    }
+  }
+
+  // Create a new service
+  static async create(data) {
+    try {
+      const { service_title, description, service_type, service_price, service_duration, category_id, service_image } = data;
+      const [result] = await pool.query(
+        'INSERT INTO services (service_title, description, service_type, service_price, service_duration, category_id, service_image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, true]
+      );
+      return result.insertId;
+    } catch (error) {
+      throw new Error('Error creating service: ' + error.message);
+    }
+  }
+
+  // Update a service
+  static async update(id, data) {
+    try {
+      const { service_title, description, service_type, service_price, service_duration, category_id, service_image } = data;
+      const [result] = await pool.query(
+        'UPDATE services SET service_title = ?, description = ?, service_type = ?, service_price = ?, service_duration = ?, category_id = ?, service_image = ? WHERE service_id = ? AND is_active = TRUE',
+        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, id]
+      );
+      return result.affectedRows > 0;
+    } catch (error) {
+      throw new Error('Error updating service: ' + error.message);
+    }
+  }
+
+  // Soft delete a service
+  static async delete(id) {
+    try {
+      const [result] = await pool.query('UPDATE services SET is_active = FALSE WHERE service_id = ? AND is_active = TRUE', [id]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      throw new Error('Error deleting service: ' + error.message);
+    }
+  }
+}
+
+module.exports = Service;
