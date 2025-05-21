@@ -18,5 +18,7 @@ router.get('/users/:id', userController.getUserById);
 router.post('/users', userController.createUser);
 router.put('/users/:id', userController.updateUser);
 router.delete('/users/:id', userController.deleteUser);
+router.post('/check-phone', userController.checkUserByPhone);
+router.put('/users/phone/:phone_number', userController.updateUserByPhone);
 
 module.exports = router;
