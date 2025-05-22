@@ -19,9 +19,11 @@ class Service {
     try {
       const [rows] = await pool.query('SELECT * FROM services WHERE service_id = ? AND is_active = TRUE', [id]);
       if (rows.length === 0) return null;
+      
+      const service = rows[0]; // Fixed: changed from 'row' to 'rows[0]'
       return {
-        ...row,
-        description: JSON.parse(rows[0].description)
+        ...service,
+        description: JSON.parse(service.description)
       };
     } catch (error) {
       throw new Error('Error fetching service: ' + error.message);
@@ -63,6 +65,21 @@ class Service {
       return result.affectedRows > 0;
     } catch (error) {
       throw new Error('Error deleting service: ' + error.message);
+    }
+  }
+
+   // Get professional by service ID
+  static async getProfessionalByServiceId(serviceId) {
+    try {
+      const [rows] = await pool.query('SELECT professional_id FROM professionals WHERE service_id = ? LIMIT 1', [serviceId]);
+      
+      if (rows.length === 0) {
+        return null;
+      }
+      
+      return rows[0].professional_id;
+    } catch (error) {
+      throw new Error('Error fetching professional by service ID: ' + error.message);
     }
   }
 }

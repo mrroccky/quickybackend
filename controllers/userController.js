@@ -1,5 +1,6 @@
 const User = require('../models/user_model');
 const pool = require('../config/database');
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.getAll();
@@ -58,23 +59,23 @@ exports.updateUserByPhone = async (req, res) => {
   try {
     const { phone_number } = req.params;
     const userData = req.body;
-    
+
     if (!phone_number) {
       return res.status(400).json({ error: 'Phone number is required' });
     }
-    
+
     // Find user by phone number first
     const user = await User.getByPhoneNumber(phone_number);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Update the user with provided data
     const updated = await User.update(user.user_id, userData);
     if (!updated) {
       return res.status(500).json({ error: 'Failed to update user' });
     }
-    
+
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     console.error('UpdateUserByPhone Error:', error);
@@ -94,6 +95,7 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 exports.checkUserByPhone = async (req, res) => {
   try {
