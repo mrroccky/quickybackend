@@ -20,7 +20,7 @@ class Service {
       const [rows] = await pool.query('SELECT * FROM services WHERE service_id = ? AND is_active = TRUE', [id]);
       if (rows.length === 0) return null;
       
-      const service = rows[0]; // Fixed: changed from 'row' to 'rows[0]'
+      const service = rows[0];
       return {
         ...service,
         description: JSON.parse(service.description)
@@ -33,10 +33,10 @@ class Service {
   // Create a new service
   static async create(data) {
     try {
-      const { service_title, description, service_type, service_price, service_duration, category_id, service_image } = data;
+      const { service_title, description, service_type, service_price, service_duration, category_id, service_image, location } = data;
       const [result] = await pool.query(
-        'INSERT INTO services (service_title, description, service_type, service_price, service_duration, category_id, service_image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, true]
+        'INSERT INTO services (service_title, description, service_type, service_price, service_duration, category_id, service_image, location, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, location || null, true]
       );
       return result.insertId;
     } catch (error) {
@@ -47,10 +47,10 @@ class Service {
   // Update a service
   static async update(id, data) {
     try {
-      const { service_title, description, service_type, service_price, service_duration, category_id, service_image } = data;
+      const { service_title, description, service_type, service_price, service_duration, category_id, service_image, location } = data;
       const [result] = await pool.query(
-        'UPDATE services SET service_title = ?, description = ?, service_type = ?, service_price = ?, service_duration = ?, category_id = ?, service_image = ? WHERE service_id = ? AND is_active = TRUE',
-        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, id]
+        'UPDATE services SET service_title = ?, description = ?, service_type = ?, service_price = ?, service_duration = ?, category_id = ?, service_image = ?, location = ? WHERE service_id = ? AND is_active = TRUE',
+        [service_title, JSON.stringify(description), service_type, service_price, service_duration, category_id, service_image, location || null, id]
       );
       return result.affectedRows > 0;
     } catch (error) {
@@ -68,7 +68,7 @@ class Service {
     }
   }
 
-   // Get professional by service ID
+  // Get professional by service ID
   static async getProfessionalByServiceId(serviceId) {
     try {
       const [rows] = await pool.query('SELECT professional_id FROM professionals WHERE service_id = ? LIMIT 1', [serviceId]);

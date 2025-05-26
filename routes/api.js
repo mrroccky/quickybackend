@@ -31,8 +31,9 @@ router.get('/bookings/user/:userId', bookingController.getBookingsByUserId);
 
 // Professional routes
 router.get('/professionals/service/:serviceId', professionalController.getProfessionalByServiceId);
-// Professional routes
 router.get('/professionals', professionalController.getAllProfessionals);
 router.post('/professionals', professionalController.createProfessional);
+router.put('/professionals/:id', professionalController.updateProfessional);
+router.delete('/professionals/:id', professionalController.deleteProfessional);
 
 module.exports = router;
