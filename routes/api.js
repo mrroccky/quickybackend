@@ -4,6 +4,9 @@ const serviceController = require('../controllers/serviceController');
 const userController = require('../controllers/userController');
 const bookingController = require('../controllers/bookingController');
 const professionalController = require('../controllers/professionalController');
+const serviceReviewController = require('../controllers/serviceReviewController');
+const userReviewProfessionalController = require('../controllers/userReviewProfessionalController');
+const paymentController = require('../controllers/paymentController');
 
 // Service routes
 router.get('/services', serviceController.getAllServices);
@@ -35,5 +38,28 @@ router.get('/professionals', professionalController.getAllProfessionals);
 router.post('/professionals', professionalController.createProfessional);
 router.put('/professionals/:id', professionalController.updateProfessional);
 router.delete('/professionals/:id', professionalController.deleteProfessional);
+
+
+//service review routes
+router.post('/servicereview', serviceReviewController.createServiceReview);
+router.get('/servicereview/', serviceReviewController.getAllServiceReviews);
+router.get('/servicereview/:id', serviceReviewController.getServiceReviewById);
+router.put('/servicereview/:id', serviceReviewController.updateServiceReview);
+router.delete('/servicereview/:id', serviceReviewController.deleteServiceReview);
+
+
+// User review for professionals routes
+router.post('/user-review-prof', userReviewProfessionalController.createUserReviewProfessional);
+router.get('/user-review-prof/', userReviewProfessionalController.getAllUserReviewsProfessionals);
+router.get('/user-review-prof/:id', userReviewProfessionalController.getUserReviewProfessionalById);
+router.put('/user-review-prof/:id', userReviewProfessionalController.updateUserReviewProfessional);
+router.delete('/user-review-prof/:id', userReviewProfessionalController.deleteUserReviewProfessional);
+
+//payment routes
+router.post('/payment', paymentController.createPayment);
+router.get('/payment/', paymentController.getAllPayments);
+router.get('/payment/:id', paymentController.getPaymentById);
+router.put('/payment/:id', paymentController.updatePayment);
+router.delete('/payment/:id', paymentController.deletePayment);
 
 module.exports = router;
