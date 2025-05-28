@@ -47,6 +47,25 @@ exports.getServiceReviewById = async (req, res) => {
   }
 };
 
+// Get all reviews for a specific service_id
+exports.getReviewsByServiceId = async (req, res) => {
+  try {
+    const service_id = req.params.service_id;
+    if (!Number.isInteger(Number(service_id))) {
+      return res.status(400).json({ message: 'service_id must be an integer' });
+    }
+
+    const reviews = await ServiceReview.findByServiceId(service_id);
+    if (!reviews || reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this service' });
+    }
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Update a service review
 exports.updateServiceReview = async (req, res) => {
   try {

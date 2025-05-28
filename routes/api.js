@@ -40,10 +40,11 @@ router.put('/professionals/:id', professionalController.updateProfessional);
 router.delete('/professionals/:id', professionalController.deleteProfessional);
 
 
-//service review routes
+// Service review routes
 router.post('/servicereview', serviceReviewController.createServiceReview);
 router.get('/servicereview/', serviceReviewController.getAllServiceReviews);
 router.get('/servicereview/:id', serviceReviewController.getServiceReviewById);
+router.get('/servicereview/service/:service_id', serviceReviewController.getReviewsByServiceId);
 router.put('/servicereview/:id', serviceReviewController.updateServiceReview);
 router.delete('/servicereview/:id', serviceReviewController.deleteServiceReview);
 

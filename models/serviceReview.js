@@ -27,6 +27,18 @@ const findById = async (id) => {
   return rows[0];
 };
 
+// Get all reviews for a specific service_id
+const findByServiceId = async (service_id) => {
+  const query = `
+    SELECT sr.service_review_id, sr.rating, sr.comment, sr.created_at, sr.service_id, sr.user_id, sr.professional_id
+    FROM service_review_table sr
+    JOIN services s ON sr.service_id = s.service_id
+    WHERE sr.service_id = ?
+  `;
+  const [rows] = await pool.execute(query, [service_id]);
+  return rows;
+};
+
 // Update a service review
 const update = async (id, { rating, comment }) => {
   const query = `
@@ -50,6 +62,7 @@ module.exports = {
   create,
   findAll,
   findById,
+  findByServiceId,
   update,
   remove,
 };
