@@ -3,11 +3,16 @@ const ServiceReview = require('../models/serviceReview');
 // Create a new service review
 exports.createServiceReview = async (req, res) => {
   try {
-    const { rating, comment, service_id, user_id, professional_id } = req.body;
+    const { rating, comment, service_id, user_id, professional_id, booking_id } = req.body;
 
-    // Validate that service_id, user_id, and professional_id are integers
-    if (!Number.isInteger(Number(service_id)) || !Number.isInteger(Number(user_id)) || !Number.isInteger(Number(professional_id))) {
-      return res.status(400).json({ message: 'service_id, user_id, and professional_id must be integers' });
+    // Validate that service_id, user_id, professional_id, and booking_id are integers
+    if (
+      !Number.isInteger(Number(service_id)) ||
+      !Number.isInteger(Number(user_id)) ||
+      !Number.isInteger(Number(professional_id)) ||
+      !Number.isInteger(Number(booking_id))
+    ) {
+      return res.status(400).json({ message: 'service_id, user_id, professional_id, and booking_id must be integers' });
     }
 
     const serviceReview = await ServiceReview.create({
@@ -16,6 +21,7 @@ exports.createServiceReview = async (req, res) => {
       service_id: Number(service_id),
       user_id: Number(user_id),
       professional_id: Number(professional_id),
+      booking_id: Number(booking_id),
     });
 
     res.status(201).json(serviceReview);
@@ -24,7 +30,7 @@ exports.createServiceReview = async (req, res) => {
   }
 };
 
-// Get all service reviews
+// Other functions remain the same
 exports.getAllServiceReviews = async (req, res) => {
   try {
     const serviceReviews = await ServiceReview.findAll();
@@ -34,12 +40,11 @@ exports.getAllServiceReviews = async (req, res) => {
   }
 };
 
-// Get a single service review by ID
 exports.getServiceReviewById = async (req, res) => {
   try {
     const serviceReview = await ServiceReview.findById(req.params.id);
     if (!serviceReview) {
-      return res.status(404).json({ message: 'Service review not found' });
+      return res.status(404).jsonme.status(404).json({ message: 'Service review not found' });
     }
     res.status(200).json(serviceReview);
   } catch (error) {
@@ -47,7 +52,6 @@ exports.getServiceReviewById = async (req, res) => {
   }
 };
 
-// Get all reviews for a specific service_id
 exports.getReviewsByServiceId = async (req, res) => {
   try {
     const service_id = req.params.service_id;
@@ -66,7 +70,6 @@ exports.getReviewsByServiceId = async (req, res) => {
   }
 };
 
-// Update a service review
 exports.updateServiceReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -82,7 +85,6 @@ exports.updateServiceReview = async (req, res) => {
   }
 };
 
-// Delete a service review
 exports.deleteServiceReview = async (req, res) => {
   try {
     const deleted = await ServiceReview.remove(req.params.id);

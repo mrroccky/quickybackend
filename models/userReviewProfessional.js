@@ -13,21 +13,19 @@ const create = async ({ booking_id, user_id, professional_id, rating, review_tex
   return { review_id, booking_id, user_id, professional_id, rating, review_text, created_at: new Date() };
 };
 
-// Get all user reviews for professionals
+// Other functions remain the same
 const findAll = async () => {
   const query = `SELECT * FROM user_reviews_professionals`;
   const [rows] = await pool.execute(query);
   return rows;
 };
 
-// Get a user review by ID
 const findById = async (id) => {
   const query = `SELECT * FROM user_reviews_professionals WHERE review_id = ?`;
   const [rows] = await pool.execute(query, [id]);
   return rows[0];
 };
 
-// Update a user review
 const update = async (id, { rating, review_text }) => {
   const query = `
     UPDATE user_reviews_professionals
@@ -39,7 +37,6 @@ const update = async (id, { rating, review_text }) => {
   return result.affectedRows > 0 ? { review_id: id, rating, review_text } : null;
 };
 
-// Delete a user review
 const remove = async (id) => {
   const query = `DELETE FROM user_reviews_professionals WHERE review_id = ?`;
   const [result] = await pool.execute(query, [id]);
