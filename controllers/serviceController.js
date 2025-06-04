@@ -27,9 +27,9 @@ exports.createService = async (req, res) => {
   try {
     const serviceData = req.body;
     console.log('Received serviceData:', serviceData);
-    if (!serviceData.service_title || !serviceData.description || !serviceData.service_type || 
-        !serviceData.service_price || !serviceData.service_duration || !serviceData.category_id || 
-        !serviceData.service_image) {
+    if (!serviceData.service_title || !serviceData.description || !serviceData.main_description || 
+        !serviceData.service_type || !serviceData.service_price || !serviceData.service_duration || 
+        !serviceData.category_id || !serviceData.service_image) {
       return res.status(400).json({ error: 'All fields are required' });
     }
     const serviceId = await Service.create(serviceData);
@@ -44,9 +44,9 @@ exports.updateService = async (req, res) => {
   try {
     const serviceData = req.body;
     console.log('Received update serviceData:', serviceData);
-    if (!serviceData.service_title || !serviceData.description || !serviceData.service_type || 
-        !serviceData.service_price || !serviceData.service_duration || !serviceData.category_id || 
-        !serviceData.service_image) {
+    if (!serviceData.service_title || !serviceData.description || !serviceData.main_description || 
+        !serviceData.service_type || !serviceData.service_price || !serviceData.service_duration || 
+        !serviceData.category_id || !serviceData.service_image) {
       return res.status(400).json({ error: 'All fields are required' });
     }
     const updated = await Service.update(req.params.id, serviceData);
