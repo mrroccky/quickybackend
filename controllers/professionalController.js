@@ -1,66 +1,128 @@
-const Professional = require('../models/professional_model');
+const pool = require('../config/database');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Multer storage configuration for memory storage (Base64 handling)
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, JPG, and PNG images are allowed!'));
+    }
+  },
+});
 
 exports.getProfessionalByServiceId = async (req, res) => {
   try {
-    const serviceId = req.params.serviceId;
-    const professionalId = await Professional.getProfessionalByServiceId(serviceId);
-    if (!professionalId) {
-      return res.status(404).json({ error: 'No professional found for this service' });
-    }
-    res.status(200).json({ professional_id: professionalId });
+    const { serviceId } = req.params;
+    const [rows] = await pool.query('SELECT * FROM professionals WHERE service_id = ?', [serviceId]);
+    res.status(200).json(rows);
   } catch (error) {
-    console.error('GetProfessionalByServiceId Error:', error);
+    console.error('Error fetching professionals by service ID:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
 exports.getAllProfessionals = async (req, res) => {
   try {
-    const professionals = await Professional.getAll();
-    res.status(200).json(professionals);
+    const [rows] = await pool.query('SELECT * FROM professionals');
+    res.status(200).json(rows);
   } catch (error) {
-    console.error('GetAllProfessionals Error:', error);
+    console.error('Error fetching all professionals:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
 exports.createProfessional = async (req, res) => {
   try {
-    const professionalData = req.body;
-    console.log('Received professionalData:', professionalData);
-    const professionalId = await Professional.create(professionalData);
-    res.status(201).json({ professional_id: professionalId });
+    const { service_id, user_id } = req.body;
+
+    // Create professional with only service_id, user_id, and status
+    // Bio, experience_years, and uploaded_file will be null initially
+    const [result] = await pool.query(
+      `INSERT INTO professionals (service_id, user_id, status, uploaded_file, bio, experience_years, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+      [service_id, user_id, 'pending', null, null, null]
+    );
+
+    res.status(201).json({
+      professional_id: result.insertId,
+      service_id,
+      user_id,
+      status: 'pending',
+      uploaded_file: null,
+      bio: null,
+      experience_years: null,
+      created_at: new Date(),
+    });
   } catch (error) {
-    console.error('CreateProfessional Error:', error);
-    res.status(400).json({ error: error.message });
+    console.error('Error creating professional:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-exports.updateProfessional = async (req, res) => {
-  try {
-    const professionalId = req.params.id;
-    const professionalData = req.body;
-    const updatedProfessional = await Professional.update(professionalId, professionalData);
-    if (!updatedProfessional) {
-      return res.status(404).json({ error: 'Professional not found' });
+exports.updateProfessional = [
+  upload.single('uploaded_file'),
+  async (req, res) => {
+    try {
+      console.log('Updating professional with data:', req.body);
+      const { id } = req.params;
+      const { status, bio, experience_years } = req.body;
+      let uploaded_file = null;
+
+      if (req.file) {
+        const base64String = req.file.buffer.toString('base64');
+        uploaded_file = `data:${req.file.mimetype};base64,${base64String}`;
+      } else if (req.body.uploaded_file) {
+        uploaded_file = req.body.uploaded_file;
+      }
+
+      // Only update verification-related fields, not service_id or user_id
+      const [result] = await pool.query(
+        `UPDATE professionals
+         SET status = ?, uploaded_file = ?, bio = ?, experience_years = ?
+         WHERE professional_id = ?`,
+        [
+          status || 'pending',
+          uploaded_file,
+          bio || null,
+          experience_years || null,
+          id,
+        ]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+
+      const [updatedRows] = await pool.query('SELECT * FROM professionals WHERE professional_id = ?', [id]);
+      res.status(200).json(updatedRows[0]);
+    } catch (error) {
+      console.error('Error updating professional:', error);
+      res.status(500).json({ error: error.message });
     }
-    res.status(200).json(updatedProfessional);
-  } catch (error) {
-    console.error('UpdateProfessional Error:', error);
-    res.status(400).json({ error: error.message });
-  }
-};
+  },
+];
 
 exports.deleteProfessional = async (req, res) => {
   try {
-    const professionalId = req.params.id;
-    const deleted = await Professional.delete(professionalId);
-    if (!deleted) {
+    const { id } = req.params;
+    const [result] = await pool.query('DELETE FROM professionals WHERE professional_id = ?', [id]);
+
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Professional not found' });
     }
-    res.status(204).send();
+
+    res.status(200).json({ message: 'Professional deleted successfully' });
   } catch (error) {
-    console.error('DeleteProfessional Error:', error);
+    console.error('Error deleting professional:', error);
     res.status(500).json({ error: error.message });
   }
 };
