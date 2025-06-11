@@ -10,6 +10,24 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
+exports.getPendingBookings = async (req, res) => {
+  try {
+    const professionalId = parseInt(req.query.professionalId, 10);
+    if (!professionalId || isNaN(professionalId)) {
+      return res.status(400).json({ error: 'Valid professionalId is required' });
+    }
+    const bookings = await Booking.getPending(professionalId);
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error('GetPendingBookings Error:', {
+      message: error.message,
+      stack: error.stack,
+      professionalId: req.query.professionalId
+    });
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getBookingById = async (req, res) => {
   try {
     const booking = await Booking.getById(req.params.id);
@@ -33,6 +51,7 @@ exports.createBooking = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
 exports.updateBooking = async (req, res) => {
   try {
     const bookingData = req.body;
@@ -49,18 +68,21 @@ exports.updateBooking = async (req, res) => {
 
 exports.deleteBooking = async (req, res) => {
   try {
-    const deleted = await Booking.delete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ error: 'Booking not found' });
+    const { professionalId } = req.body;
+    if (!professionalId) {
+      return res.status(400).json({ error: 'professionalId is required' });
     }
-    res.status(200).json({ message: 'Booking deleted successfully' });
+    const rejected = await Booking.rejectBooking(req.params.id, professionalId);
+    if (!rejected) {
+      return res.status(404).json({ error: 'Booking not found or already rejected' });
+    }
+    res.status(200).json({ message: 'Booking rejected successfully' });
   } catch (error) {
     console.error('DeleteBooking Error:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// New method: Get bookings by user_id
 exports.getBookingsByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -74,3 +96,5 @@ exports.getBookingsByUserId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+module.exports = exports;

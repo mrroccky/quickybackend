@@ -74,29 +74,49 @@ exports.updateProfessional = [
     try {
       console.log('Updating professional with data:', req.body);
       const { id } = req.params;
-      const { status, bio, experience_years } = req.body;
+      const { status, bio, experience_years, availability } = req.body;
       let uploaded_file = null;
 
+      // Only set uploaded_file if a file is uploaded or explicitly provided
       if (req.file) {
         const base64String = req.file.buffer.toString('base64');
         uploaded_file = `data:${req.file.mimetype};base64,${base64String}`;
-      } else if (req.body.uploaded_file) {
+      } else if (req.body.uploaded_file && req.body.uploaded_file !== 'null') {
         uploaded_file = req.body.uploaded_file;
       }
 
-      // Only update verification-related fields, not service_id or user_id
-      const [result] = await pool.query(
-        `UPDATE professionals
-         SET status = ?, uploaded_file = ?, bio = ?, experience_years = ?
-         WHERE professional_id = ?`,
-        [
-          status || 'pending',
-          uploaded_file,
-          bio || null,
-          experience_years || null,
-          id,
-        ]
-      );
+      // Build dynamic update query
+      const fields = [];
+      const values = [];
+
+      if (availability) {
+        fields.push('availability = ?');
+        values.push(availability);
+      }
+      if (status) {
+        fields.push('status = ?');
+        values.push(status);
+      }
+      if (uploaded_file) { // Only include if explicitly set
+        fields.push('uploaded_file = ?');
+        values.push(uploaded_file);
+      }
+      if (bio !== undefined) {
+        fields.push('bio = ?');
+        values.push(bio || null);
+      }
+      if (experience_years !== undefined) {
+        fields.push('experience_years = ?');
+        values.push(experience_years || null);
+      }
+
+      if (fields.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' });
+      }
+
+      values.push(id);
+      const query = `UPDATE professionals SET ${fields.join(', ')} WHERE professional_id = ?`;
+      const [result] = await pool.query(query, values);
 
       if (result.affectedRows === 0) {
         return res.status(404).json({ error: 'Professional not found' });
@@ -125,4 +145,12 @@ exports.deleteProfessional = async (req, res) => {
     console.error('Error deleting professional:', error);
     res.status(500).json({ error: error.message });
   }
+};
+
+module.exports = {
+  getProfessionalByServiceId: exports.getProfessionalByServiceId,
+  getAllProfessionals: exports.getAllProfessionals,
+  createProfessional: exports.createProfessional,
+  updateProfessional: exports.updateProfessional,
+  deleteProfessional: exports.deleteProfessional,
 };

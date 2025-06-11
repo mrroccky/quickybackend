@@ -28,7 +28,21 @@ exports.createUserReviewProfessional = async (req, res) => {
   }
 };
 
-// Other functions remain the same
+// Get all reviews for a professional with average rating
+exports.getUserReviewProfessionalById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reviewData = await UserReviewProfessional.findByProfessionalId(id);
+    if (reviewData.totalReviews === 0) {
+      return res.status(200).json({ averageRating: 0, totalReviews: 0, reviews: [] });
+    }
+    res.status(200).json(reviewData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get all reviews
 exports.getAllUserReviewsProfessionals = async (req, res) => {
   try {
     const userReviews = await UserReviewProfessional.findAll();
@@ -38,18 +52,7 @@ exports.getAllUserReviewsProfessionals = async (req, res) => {
   }
 };
 
-exports.getUserReviewProfessionalById = async (req, res) => {
-  try {
-    const userReview = await UserReviewProfessional.findById(req.params.id);
-    if (!userReview) {
-      return res.status(404).json({ message: 'User review not found' });
-    }
-    res.status(200).json(userReview);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
+// Update a review
 exports.updateUserReviewProfessional = async (req, res) => {
   try {
     const { rating, review_text } = req.body;
@@ -65,6 +68,7 @@ exports.updateUserReviewProfessional = async (req, res) => {
   }
 };
 
+// Delete a review
 exports.deleteUserReviewProfessional = async (req, res) => {
   try {
     const deleted = await UserReviewProfessional.remove(req.params.id);

@@ -26,6 +26,7 @@ router.put('/users/phone/:phone_number', userController.updateUserByPhone);
 
 // Booking routes
 router.get('/bookings', bookingController.getAllBookings);
+router.get('/bookings/pending', bookingController.getPendingBookings);
 router.get('/bookings/:id', bookingController.getBookingById);
 router.post('/bookings', bookingController.createBooking);
 router.put('/bookings/:id', bookingController.updateBooking);
