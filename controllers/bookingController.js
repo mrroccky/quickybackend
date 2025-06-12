@@ -54,8 +54,21 @@ exports.createBooking = async (req, res) => {
 
 exports.updateBooking = async (req, res) => {
   try {
+    const bookingId = req.params.id;
     const bookingData = req.body;
-    const updated = await Booking.update(req.params.id, bookingData);
+
+    if (bookingData.status === 'accepted') {
+      const booking = await Booking.getById(bookingId);
+      if (booking && booking.status === 'accepted' && booking.professional_id && booking.professional_id !== bookingData.professional_id) {
+        return res.status(400).json({ error: 'Booking already accepted by another professional' });
+      }
+      // Ensure professional_id is provided for acceptance
+      if (!bookingData.professional_id || isNaN(parseInt(bookingData.professional_id, 10))) {
+        return res.status(400).json({ error: 'Valid professional_id is required for acceptance' });
+      }
+    }
+
+    const updated = await Booking.update(bookingId, bookingData);
     if (!updated) {
       return res.status(404).json({ error: 'Booking not found' });
     }

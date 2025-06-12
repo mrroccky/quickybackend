@@ -19,7 +19,7 @@ class Booking {
         `SELECT b.*
          FROM bookings b
          LEFT JOIN booking_rejections br ON b.booking_id = br.booking_id AND br.professional_id = ?
-         WHERE (b.status = 'pending' AND br.booking_id IS NULL)
+         WHERE (b.status = 'pending' AND br.booking_id IS NULL AND b.professional_id IS NULL)
          OR (b.status = 'accepted' AND b.professional_id = ?)
          `,
         [professionalId, professionalId]
@@ -115,7 +115,7 @@ class Booking {
       const finalLatitude = latitude || null;
       const finalLongitude = longitude || null;
       const finalUserId = user_id || null;
-      const finalProfessionalId = professional_id || null;
+      const finalProfessionalId = professional_id || null; // Allow NULL for new bookings
       const finalCreatedAt = created_at || new Date().toISOString().slice(0, 19).replace('T', ' ');
 
       console.log('Generated PIN for booking:', bookingPin);
@@ -221,7 +221,7 @@ class Booking {
       }
       if (professional_id !== undefined) {
         updateFields.push('professional_id = ?');
-        updateValues.push(professional_id);
+        updateValues.push(professional_id === '' ? null : professional_id); // Convert empty string to NULL
       }
       if (status !== undefined) {
         updateFields.push('status = ?');
