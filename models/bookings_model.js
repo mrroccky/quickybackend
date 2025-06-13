@@ -221,7 +221,7 @@ class Booking {
       }
       if (professional_id !== undefined) {
         updateFields.push('professional_id = ?');
-        updateValues.push(professional_id === '' ? null : professional_id); // Convert empty string to NULL
+        updateValues.push(professional_id === '' ? null : professional_id); 
       }
       if (status !== undefined) {
         updateFields.push('status = ?');

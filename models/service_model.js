@@ -78,9 +78,9 @@ class Service {
   // Create a new service
   static async create(data) {
     try {
-      const { service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location } = data;
+      const { service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location, commission_money } = data;
       const [result] = await pool.query(
-        'INSERT INTO services (service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO services (service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location, commission_money, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           service_title, 
           this.formatForStorage(description), 
@@ -91,6 +91,7 @@ class Service {
           category_id, 
           service_image, 
           location || null, 
+          commission_money || 0.00,
           true
         ]
       );
@@ -103,9 +104,9 @@ class Service {
   // Update a service
   static async update(id, data) {
     try {
-      const { service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location } = data;
+      const { service_title, description, main_description, service_type, service_price, service_duration, category_id, service_image, location, commission_money } = data;
       const [result] = await pool.query(
-        'UPDATE services SET service_title = ?, description = ?, main_description = ?, service_type = ?, service_price = ?, service_duration = ?, category_id = ?, service_image = ?, location = ? WHERE service_id = ? AND is_active = TRUE',
+        'UPDATE services SET service_title = ?, description = ?, main_description = ?, service_type = ?, service_price = ?, service_duration = ?, category_id = ?, service_image = ?, location = ?, commission_money = ? WHERE service_id = ? AND is_active = TRUE',
         [
           service_title, 
           this.formatForStorage(description), 
@@ -116,6 +117,7 @@ class Service {
           category_id, 
           service_image, 
           location || null, 
+          commission_money || 0.00,
           id
         ]
       );

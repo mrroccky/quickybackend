@@ -47,9 +47,9 @@ exports.createProfessional = async (req, res) => {
     // Create professional with only service_id, user_id, and status
     // Bio, experience_years, and uploaded_file will be null initially
     const [result] = await pool.query(
-      `INSERT INTO professionals (service_id, user_id, status, uploaded_file, bio, experience_years, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-      [service_id, user_id, 'pending', null, null, null]
+      `INSERT INTO professionals (service_id, user_id, status, uploaded_file, bio, experience_years, created_at, money_earned)
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)`,
+      [service_id, user_id, 'pending', null, null, null, 0.00]
     );
 
     res.status(201).json({
@@ -60,6 +60,7 @@ exports.createProfessional = async (req, res) => {
       uploaded_file: null,
       bio: null,
       experience_years: null,
+      money_earned: 0.00,
       created_at: new Date(),
     });
   } catch (error) {
@@ -74,7 +75,7 @@ exports.updateProfessional = [
     try {
       console.log('Updating professional with data:', req.body);
       const { id } = req.params;
-      const { status, bio, experience_years, availability } = req.body;
+      const { status, bio, experience_years, availability, money_earned } = req.body;
       let uploaded_file = null;
 
       // Only set uploaded_file if a file is uploaded or explicitly provided
@@ -108,6 +109,10 @@ exports.updateProfessional = [
       if (experience_years !== undefined) {
         fields.push('experience_years = ?');
         values.push(experience_years || null);
+      }
+      if (money_earned !== undefined) {
+        fields.push('money_earned = money_earned + ?');
+        values.push(money_earned);
       }
 
       if (fields.length === 0) {
